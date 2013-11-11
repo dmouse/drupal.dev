@@ -496,17 +496,41 @@ define mysql_nginx_default_conf (
     notify       => Class['nginx::service'],
   }
 }
+
 package { 'susy':
     ensure   => 'installed',
     provider => 'gem',
 }
 
-#class {'drush':
-#  ensure => latest,
-#}
+exec { 'drush':
+  user      => 'root',
+  group     => 'root',
+  path      => '/usr/bin',
+  command   => 'git clone https://github.com/drush-ops/drush /opt/drush',
+  creates   => '/opt/drush',
+  logoutput => true
+}
 
-#drush::dl {'drupal':
-#  site_path => '/var/www/',
-#  log => '/var/log/drush.log'
-#}
+exec { 'drushln':
+  user    => 'root',
+  group   => 'root',
+  path    => '/bin',
+  command => 'ln -s /opt/drush/drush /usr/local/bin/',
+  creates => '/usr/local/bin/drush',
+  require => Exec['drush'];
+}
+
+exec { 'public_html':
+  path    => '/bin',
+  command => 'ln -s /var/www/ /home/vagrant/public_html',
+  creates => '/home/vagrant/public_html'
+}
+
+exec { 'drupal':
+  path      => ['/usr/local/bin','/usr/bin', '/bin'],
+  command   => 'drush dl drupal --destination=/var --drupal-project-rename=www -y',
+  creates   => '/var/www/sites',
+  logoutput => true,
+  require => Exec['drushln'];
+}
 

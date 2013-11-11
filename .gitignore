@@ -1,5 +1,6 @@
 lonas.sublime-project
 lonas.sublime-workspace
 .vagrant
+www
 www/vendor
 www/theme/.sass-cache
